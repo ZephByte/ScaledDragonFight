@@ -4,6 +4,8 @@
   "package": "com.zephbyte.scaleddragonfight.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "EnderDragonFightAccessor",
+    "EnderDragonFightMixin"
   ],
   "injectors": {
     "defaultRequire": 1
