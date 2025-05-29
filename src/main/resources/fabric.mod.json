@@ -11,7 +11,7 @@
   "environment": "server",
   "entrypoints": {
     "main": [
-      "com.zephbyte.scaleddragonfight.Scaleddragonfight"
+      "com.zephbyte.scaleddragonfight.ScaledDragonFight"
     ]
   },
   "mixins": [

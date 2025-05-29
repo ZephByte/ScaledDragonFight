@@ -27,7 +27,7 @@ After first launch, a config file will be generated at:
 You can configure:
 
 ```
-enableMod=true                           # Enable or disable the mod
+enableMod=true                          # Enable or disable the mod
 scaleWithOnePlayer=false                # Whether scaling starts with the first player
 countCreativeModePlayers=false          # Include creative players in scaling
 baseDragonHealth=200.0                  # Base health of the Ender Dragon
