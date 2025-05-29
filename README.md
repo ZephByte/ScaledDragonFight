@@ -1,6 +1,6 @@
-# 🐉 Scaled Dragon Fight
+# Scaled Dragon Fight 🌠
 
-A lightweight **server-side Fabric mod** that dynamically scales the **Ender Dragon's** health based on the number of players present in The End during its spawn.
+A lightweight **server-side Fabric mod** that dynamically scales the **Ender Dragon's** health based on the number of players in The End — now with support for **delayed initial spawns** and XP bar countdowns.
 
 No installation is needed on the client — just drop it into your server's `mods` folder and configure it to your liking.
 
@@ -9,8 +9,9 @@ No installation is needed on the client — just drop it into your server's `mod
 ## 🔧 Features
 
 - 📈 **Dynamic Health Scaling:** The Ender Dragon's max health increases with each eligible player in The End.
+- ⏱️ **Initial Spawn Delay:** Optionally delay the very first dragon spawn and show a countdown on players’ XP bars.
 - ⚙️ **Server-Side Only:** No client installation required — perfect for modded or vanilla-compatible SMPs.
-- 🔧 **Configurable:** Customize how scaling works via a simple `.properties` config file.
+- 🔧 **Configurable:** Customize how scaling and spawn delays work via a simple `.properties` config file.
 - 📢 **Broadcast Messages:** Optional announcements when a scaled dragon appears.
 - 🛠️ **In-Game Reload:** `/scaleddragonfight reload` command to reload configuration without restarting the server.
 
@@ -33,6 +34,11 @@ countCreativeModePlayers=false          # Include creative players in scaling
 baseDragonHealth=200.0                  # Base health of the Ender Dragon
 additionalHealthPerPlayer=100.0         # Health added per eligible player
 enableBroadcast=true                    # Enable broadcast when dragon spawns
+
+# Initial Spawn Delay
+enableInitialSpawnDelay=true            # Delay the first dragon spawn in The End
+initialSpawnDelaySeconds=60             # Time (in seconds) before first dragon spawns
+showSpawnDelayCountdown=true            # Show countdown above XP bar during delay
 ```
 
 ---
