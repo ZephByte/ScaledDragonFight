@@ -115,5 +115,8 @@ gradle-app.setting
 run/
 runs/
 
+# Kotlin compiler cache/sessionfiles
+.kotlin/
+
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar
