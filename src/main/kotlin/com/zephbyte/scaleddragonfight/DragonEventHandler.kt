@@ -136,11 +136,6 @@ object DragonEventHandler {
                         LOGGER.error("Could not cast EnderDragonFight to EnderDragonFightAccessor. Dragon not spawned post-delay.")
                     }
                 } ?: LOGGER.error("EnderDragonFight instance was null when trying to spawn dragon post-delay for ${world.registryKey.value}")
-
-                // Consider if you want to remove the state from worldDelayStates here
-                // if this is a strictly one-time event per world load.
-                // For now, leaving it allows it to correctly handle subsequent vanilla calls
-                // by returning false from onInitialDragonPreSpawn (Case 2).
             }
         }
     }
