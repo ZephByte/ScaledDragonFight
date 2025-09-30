@@ -111,10 +111,7 @@ object DragonEventHandler {
                 if (remainingSeconds > 0) { // Only show if time is actually remaining
                     val message = Text.literal("Dragon spawning in: $remainingSeconds...")
                     world.players.forEach { player ->
-                        // Double-check player is in The End (should be, given END_WORLD_TICK)
-                        if (player.world.registryKey == World.END) {
-                            player.sendMessage(message, true) // 'true' sends to action bar
-                        }
+                        player.sendMessage(message, true) // 'true' sends to action bar
                     }
                 }
             }
