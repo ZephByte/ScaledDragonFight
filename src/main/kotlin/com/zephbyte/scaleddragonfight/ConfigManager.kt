@@ -1,162 +1,113 @@
 package com.zephbyte.scaleddragonfight
 
+import com.electronwill.nightconfig.core.file.CommentedFileConfig
+import com.electronwill.nightconfig.core.io.WritingMode
 import net.fabricmc.loader.api.FabricLoader
-import java.nio.file.Files
-import java.nio.file.Path
-import java.util.*
+import kotlin.properties.ReadOnlyProperty
 
-object ConfigManager {
+private object ConfigManager {
 
-    /*---- Default configuration values ----*/
-    private const val DEFAULT_ENABLE_MOD = true
-    private const val DEFAULT_SCALE_WITH_ONE_PLAYER = false
-    private const val DEFAULT_COUNT_CREATIVE_MODE_PLAYERS = false
-    private const val DEFAULT_BASE_DRAGON_HEALTH = 200.0f
-    private const val DEFAULT_ADDITIONAL_HEALTH_PER_PLAYER = 100.0f
-    private const val DEFAULT_ENABLE_BROADCAST = true
+    // The 'lateinit' keyword means we promise to initialize it before it's ever accessed.
+    // The 'private set' ensures that only the ConfigManager itself can replace the config object.
+    lateinit var config: ConfigData
+        private set
 
-    // Values for delay dragon spawn
-    private const val DEFAULT_ENABLE_INITIAL_SPAWN_DELAY = true
-    private const val DEFAULT_INITIAL_SPAWN_DELAY_SECONDS = 60
-    private const val DEFAULT_SHOW_SPAWN_DELAY_COUNTDOWN = true
+    private val builder = CommentedFileConfig.builder(FabricLoader.getInstance().configDir.resolve("$MOD_ID.toml"))
+        .autosave()
+        .writingMode(WritingMode.REPLACE)
 
-    /*---- Configurable values ----*/
-    var enableMod: Boolean = DEFAULT_ENABLE_MOD
-    var scaleWithOnePlayer: Boolean = DEFAULT_SCALE_WITH_ONE_PLAYER
-    var countCreativeModePlayers: Boolean = DEFAULT_COUNT_CREATIVE_MODE_PLAYERS
-    var baseDragonHealth: Float = DEFAULT_BASE_DRAGON_HEALTH
-    var additionalHealthPerPlayer: Float = DEFAULT_ADDITIONAL_HEALTH_PER_PLAYER
-    var enableBroadcast: Boolean = DEFAULT_ENABLE_BROADCAST
+    /**
+     * Loads or reloads the configuration from the file on disk.
+     * This function is called by the public-facing SDFConfig object.
+     */
+    fun reloadConfig() {
+        val fileConfig = builder.build()
+        fileConfig.load()
+        // A new ConfigData object is created, which reads all the latest values from the file.
+        // This new object then replaces the old one.
+        config = ConfigData(fileConfig)
+        fileConfig.save()
+        fileConfig.close()
+    }
+}
 
-    // Values for delay dragon
-    var enableInitialSpawnDelay: Boolean = DEFAULT_ENABLE_INITIAL_SPAWN_DELAY
-    var initialSpawnDelaySeconds: Int = DEFAULT_INITIAL_SPAWN_DELAY_SECONDS
-    var showSpawnDelayCountdown: Boolean = DEFAULT_SHOW_SPAWN_DELAY_COUNTDOWN
+/**
+ * A data class to hold all configuration values in a structured way.
+ * This is a public class so that its properties can be exposed by the public SDFConfig object.
+ */
+class ConfigData(fileConfig: CommentedFileConfig) {
+    val general = General(fileConfig)
+    val healthScaling = HealthScaling(fileConfig)
+    val broadcastMessages = BroadcastMessages(fileConfig)
+    val countdown = Countdown(fileConfig)
+    val spawnDelay = SpawnDelay(fileConfig)
 
-    private val configFilePath: Path = FabricLoader.getInstance().configDir.resolve("$MOD_ID.properties")
-
-    fun loadConfig() {
-        LOGGER.info("Loading Scaled Dragon Fight configuration...")
-        val properties = Properties()
-
-        if (Files.exists(configFilePath)) {
-            try {
-                Files.newInputStream(configFilePath).use { inputStream ->
-                    properties.load(inputStream)
-                }
-
-                /*---- Load configuration values ----*/
-                enableMod = properties.getProperty("enableMod", DEFAULT_ENABLE_MOD.toString()).toBooleanStrictOrNull()
-                    ?: DEFAULT_ENABLE_MOD
-                scaleWithOnePlayer =
-                    properties.getProperty("scaleWithOnePlayer", DEFAULT_SCALE_WITH_ONE_PLAYER.toString())
-                        .toBooleanStrictOrNull() ?: DEFAULT_SCALE_WITH_ONE_PLAYER
-                countCreativeModePlayers =
-                    properties.getProperty("countCreativeModePlayers", DEFAULT_COUNT_CREATIVE_MODE_PLAYERS.toString())
-                        .toBooleanStrictOrNull() ?: DEFAULT_COUNT_CREATIVE_MODE_PLAYERS
-                baseDragonHealth =
-                    properties.getProperty("baseDragonHealth", DEFAULT_BASE_DRAGON_HEALTH.toString()).toFloatOrNull()
-                        ?: DEFAULT_BASE_DRAGON_HEALTH
-                additionalHealthPerPlayer =
-                    properties.getProperty("additionalHealthPerPlayer", DEFAULT_ADDITIONAL_HEALTH_PER_PLAYER.toString())
-                        .toFloatOrNull() ?: DEFAULT_ADDITIONAL_HEALTH_PER_PLAYER
-                enableBroadcast = properties.getProperty("enableBroadcast", DEFAULT_ENABLE_BROADCAST.toString())
-                    .toBooleanStrictOrNull() ?: DEFAULT_ENABLE_BROADCAST
-
-                // Values for delay dragon spawn
-                enableInitialSpawnDelay =
-                    properties.getProperty("enableInitialSpawnDelay", DEFAULT_ENABLE_INITIAL_SPAWN_DELAY.toString())
-                        .toBooleanStrictOrNull() ?: DEFAULT_ENABLE_INITIAL_SPAWN_DELAY
-                initialSpawnDelaySeconds =
-                    properties.getProperty("initialSpawnDelaySeconds", DEFAULT_INITIAL_SPAWN_DELAY_SECONDS.toString())
-                        .toIntOrNull() ?: DEFAULT_INITIAL_SPAWN_DELAY_SECONDS
-                showSpawnDelayCountdown =
-                    properties.getProperty("showSpawnDelayCountdown", DEFAULT_SHOW_SPAWN_DELAY_COUNTDOWN.toString())
-                        .toBooleanStrictOrNull() ?: DEFAULT_SHOW_SPAWN_DELAY_COUNTDOWN
-
-
-                LOGGER.info("Configuration loaded: Mod Enabled = $enableMod, Scale w/ 1 Player = $scaleWithOnePlayer, Count Creative = $countCreativeModePlayers, Base Health = $baseDragonHealth, Additional Health/Player = $additionalHealthPerPlayer, Enable Broadcast = $enableBroadcast")
-                // Ensure config file is up-to-date with current or default values if parsing failed for some
-                saveConfig()
-            } catch (e: Exception) {
-                LOGGER.error(
-                    "Failed to load configuration for $MOD_ID. Using default values and attempting to save a new config file.",
-                    e
-                )
-                resetToDefaultsAndSave()
-            }
-        } else {
-            LOGGER.info("No configuration file found for $MOD_ID. Creating with default values.")
-            resetToDefaultsAndSave()
-        }
+    class General(config: CommentedFileConfig) {
+        val enableMod by define(config, "general.enableMod", true, "Enable or disable the entire mod.")
+        val scaleWithOnePlayer by define(config, "general.scaleWithOnePlayer", false, "If true, dragon's health will be scaled even if there is only one player in The End.")
+        val countCreativeModePlayers by define(config, "general.countCreativeModePlayers", false, "If true, players in creative mode will be counted for health scaling.")
     }
 
-    fun saveConfig() {
-        LOGGER.info("Saving Scaled Dragon Fight configuration...")
-        val properties = Properties()
-
-        /*---- Save configuration values ----*/
-        properties.setProperty("enableMod", enableMod.toString())
-        properties.setProperty("scaleWithOnePlayer", scaleWithOnePlayer.toString())
-        properties.setProperty("countCreativeModePlayers", countCreativeModePlayers.toString())
-        properties.setProperty("baseDragonHealth", baseDragonHealth.toString())
-        properties.setProperty("additionalHealthPerPlayer", additionalHealthPerPlayer.toString())
-        properties.setProperty("enableBroadcast", enableBroadcast.toString())
-
-        // Values for delay dragon
-        properties.setProperty("enableInitialSpawnDelay", enableInitialSpawnDelay.toString())
-        properties.setProperty("initialSpawnDelaySeconds", initialSpawnDelaySeconds.toString())
-        properties.setProperty("showSpawnDelayCountdown", showSpawnDelayCountdown.toString())
-
-        val comments = """
-            Scaled Dragon Fight Configuration
-            
-            enableMod: If true, the mod will be active. (Default: $DEFAULT_ENABLE_MOD)
-            baseDragonHealth: Base health of the Ender Dragon. (Default: $DEFAULT_BASE_DRAGON_HEALTH)
-            additionalHealthPerPlayer: Extra health added for each eligible player. (Default: $DEFAULT_ADDITIONAL_HEALTH_PER_PLAYER)
-            scaleWithOnePlayer: If true, the dragon's health will increase counting the first eligible player.
-                              If false, scaling only starts with the second eligible player.
-                              Example (assuming 100 additional health per player):
-                                  True:
-                                      1 Eligible Player = Base Health + 100
-                                      2 Eligible Players = Base Health + 200
-                                  False:
-                                      1 Eligible Player = Base Health
-                                      2 Eligible Players = Base Health + 100
-                              (Default: $DEFAULT_SCALE_WITH_ONE_PLAYER)
-            countCreativeModePlayers: If true, players in creative mode will be counted when scaling health. (Default: $DEFAULT_COUNT_CREATIVE_MODE_PLAYERS)
-            enableBroadcast: If true, a message will be broadcast when the scaled dragon spawns. (Default: $DEFAULT_ENABLE_BROADCAST)
-            
-            --- Initial Spawn Delay ---
-            enableInitialSpawnDelay: If true, the very first Ender Dragon spawn in The End will be delayed. (Default: $DEFAULT_ENABLE_INITIAL_SPAWN_DELAY)
-            initialSpawnDelaySeconds: How many seconds to delay the initial dragon spawn. (Default: $DEFAULT_INITIAL_SPAWN_DELAY_SECONDS)
-            showSpawnDelayCountdown: If true, a countdown will be shown on players' XP bars in The End during the delay. (Default: $DEFAULT_SHOW_SPAWN_DELAY_COUNTDOWN)
-            \n
-        """.trimIndent()
-
-        try {
-            Files.newOutputStream(configFilePath).use { outputStream ->
-                properties.store(outputStream, comments)
-            }
-            LOGGER.info("Configuration saved to $configFilePath")
-        } catch (e: Exception) {
-            LOGGER.error("Failed to save configuration for $MOD_ID.", e)
-        }
+    class HealthScaling(config: CommentedFileConfig) {
+        val baseDragonHealth by define(config, "healthScaling.baseDragonHealth", 200.0f, "The base health of the Ender Dragon.")
+        val additionalHealthPerPlayer by define(config, "healthScaling.additionalHealthPerPlayer", 100.0f, "How much health to add to the Ender Dragon for each additional player.")
     }
 
-    private fun resetToDefaultsAndSave() {
-        /*---- Reset configuration values to defaults ----*/
-        enableMod = DEFAULT_ENABLE_MOD
-        scaleWithOnePlayer = DEFAULT_SCALE_WITH_ONE_PLAYER
-        countCreativeModePlayers = DEFAULT_COUNT_CREATIVE_MODE_PLAYERS
-        baseDragonHealth = DEFAULT_BASE_DRAGON_HEALTH
-        additionalHealthPerPlayer = DEFAULT_ADDITIONAL_HEALTH_PER_PLAYER
-        enableBroadcast = DEFAULT_ENABLE_BROADCAST
+    class BroadcastMessages(config: CommentedFileConfig) {
+        val enableBroadcast by define(config, "broadcastMessages.enableBroadcast", true, "Enable or disable broadcast messages (e.g., when the dragon's health is scaled).")
+    }
 
-        // Values for delay dragon
-        enableInitialSpawnDelay = DEFAULT_ENABLE_INITIAL_SPAWN_DELAY
-        initialSpawnDelaySeconds = DEFAULT_INITIAL_SPAWN_DELAY_SECONDS
-        showSpawnDelayCountdown = DEFAULT_SHOW_SPAWN_DELAY_COUNTDOWN
-        saveConfig()
+    class Countdown(config: CommentedFileConfig) {
+        // TODO Zeph: Use these new configurables
+        val enableCountdownOverworld by define(config, "countdown.enableCountdownOverworld", true, "Show the countdown to players in the Overworld.")
+        val enableCountdownTheEnd by define(config, "countdown.enableCountdownTheEnd", true, "Show the countdown to players in The End.")
+        val enableCountdownNether by define(config, "countdown.enableCountdownNether", false, "Show the countdown to players in the Nether.")
+    }
+
+    class SpawnDelay(config: CommentedFileConfig) {
+        val enableInitialSpawnDelay by define(config, "spawnDelay.enableInitialSpawnDelay", true, "Enable a delay before the Ender Dragon initially spawns.")
+        val initialSpawnDelaySeconds by define(config, "spawnDelay.initialSpawnDelaySeconds", 60, "The duration of the initial spawn delay in seconds.")
+        val showSpawnDelayCountdown by define(config, "spawnDelay.showSpawnDelayCountdown", true, "Show a countdown message for the initial spawn delay.")
+    }
+}
+
+
+/**
+ * A generic helper function that creates a delegated property for a config value.
+ * This is now a top-level private function, accessible within this file.
+ */
+@Suppress("UNCHECKED_CAST")
+private fun <T> define(config: CommentedFileConfig, path: String, defaultValue: T, comment: String): ReadOnlyProperty<Any?, T> {
+    config.setComment(path, " [default: $defaultValue]\n $comment")
+
+    // Use getOrElse to safely get the value. If it's missing or the wrong type,
+    // it will set the path to the default value and return that.
+    val value = config.getOrElse(path, defaultValue)
+    if (!config.contains(path)) {
+        config.set<T>(path, defaultValue)
+    }
+
+    // Return a property delegate that simply provides the value loaded at creation time.
+    return ReadOnlyProperty { _, _ -> value as T }
+}
+
+/**
+ * The public-facing API for accessing configuration values.
+ *
+ * To reload the config, call `SDFConfig.reload()`.
+ * To access a value, use `SDFConfig.general.enableMod`.
+ */
+object SDFConfig {
+    val general get() = ConfigManager.config.general
+    val healthScaling get() = ConfigManager.config.healthScaling
+    val broadcastMessages get() = ConfigManager.config.broadcastMessages
+    val countdown get() = ConfigManager.config.countdown
+    val spawnDelay get() = ConfigManager.config.spawnDelay
+
+    /**
+     * Public function to trigger a reload of the configuration from the file.
+     */
+    fun reload() {
+        ConfigManager.reloadConfig()
     }
 }

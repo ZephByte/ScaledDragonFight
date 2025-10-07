@@ -7,7 +7,7 @@ class ScaledDragonFight : ModInitializer {
     override fun onInitialize() {
         LOGGER.info("Scaled Dragon Fight mod initializing...")
 
-        ConfigManager.loadConfig()
+        SDFConfig.reload()
         DragonEventHandler.register()
         ModCommands.register()
 
