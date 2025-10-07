@@ -1,7 +1,6 @@
 package com.zephbyte.scaleddragonfight
 
 import com.mojang.brigadier.CommandDispatcher
-import com.zephbyte.scaleddragonfight.ConfigManager.enableMod // Direct access to config
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.commands.Commands
 import net.minecraft.commands.CommandSourceStack
@@ -11,7 +10,7 @@ import net.minecraft.server.permissions.Permissions
 object ModCommands {
 
     fun register() {
-        CommandRegistrationCallback.EVENT.register { dispatcher, registryAccess, environment ->
+        CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
             registerReloadCommand(dispatcher)
         }
     }
@@ -24,8 +23,8 @@ object ModCommands {
                 .then(Commands.literal("reload")
                     .requires { source -> source.permissions().hasPermission(Permissions.COMMANDS_ADMIN) } // Only ADMINS can reload
                     .executes { context ->
-                        ConfigManager.loadConfig() // Reload config from ConfigManager
-                        val feedbackMsg = if (enableMod) { // Check enableMod from ConfigManager
+                        SDFConfig.reload() // Reload config from ConfigManager
+                        val feedbackMsg = if (SDFConfig.general.enableMod) { // Check enableMod from ConfigManager
                             "Scaled Dragon Fight configuration reloaded. Mod is ENABLED."
                         } else {
                             "Scaled Dragon Fight configuration reloaded. Mod is DISABLED."
