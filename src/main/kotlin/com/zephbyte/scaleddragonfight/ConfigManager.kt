@@ -77,18 +77,41 @@ class ConfigData(fileConfig: CommentedFileConfig) {
  * This is now a top-level private function, accessible within this file.
  */
 @Suppress("UNCHECKED_CAST")
-private fun <T> define(config: CommentedFileConfig, path: String, defaultValue: T, comment: String): ReadOnlyProperty<Any?, T> {
-    config.setComment(path, " [default: $defaultValue]\n $comment")
+private fun <T : Any> define(config: CommentedFileConfig, path: String, defaultValue: T, comment: String): ReadOnlyProperty<Any?, T> {
+    // Set the comment. This will be written to the file when config.save() is called.
+    config.setComment(path, " [Default: $defaultValue]\n $comment")
 
-    // Use getOrElse to safely get the value. If it's missing or the wrong type,
-    // it will set the path to the default value and return that.
-    val value = config.getOrElse(path, defaultValue)
-    if (!config.contains(path)) {
-        config.set<T>(path, defaultValue)
+    // Get the raw value from the config, which could be of any type.
+    val rawValue = config.get<Any>(path)
+    val value: T
+
+    when {
+        // Case 1: The value from the config is null or missing.
+        rawValue == null -> {
+            config.set<T>(path, defaultValue)
+            value = defaultValue
+        }
+
+        // Case 2: We want a Float but got a Number (like a Double) that can be converted.
+        defaultValue is Float && rawValue is Number -> {
+            value = rawValue.toFloat() as T
+        }
+
+        // Case 3: The value exists and is already the correct type.
+        defaultValue::class.java.isInstance(rawValue) -> {
+            value = rawValue as T
+        }
+
+        // Case 4: The value is the wrong type and can't be handled automatically.
+        else -> {
+            config.set<T>(path, defaultValue)
+            value = defaultValue
+            LOGGER.info("ERROR: $path was set to $rawValue, which is NOT of type ${defaultValue::class.java}! Setting to default")
+        }
     }
 
     // Return a property delegate that simply provides the value loaded at creation time.
-    return ReadOnlyProperty { _, _ -> value as T }
+    return ReadOnlyProperty { _, _ -> value }
 }
 
 /**
