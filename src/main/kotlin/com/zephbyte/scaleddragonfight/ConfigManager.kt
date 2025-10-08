@@ -43,34 +43,81 @@ class ConfigData(fileConfig: CommentedFileConfig) {
     val spawnDelay = SpawnDelay(fileConfig)
 
     class General(config: CommentedFileConfig) {
-        val enableMod by define(config, "general.enableMod", true, "Enable or disable the entire mod.")
-        val scaleWithOnePlayer by define(config, "general.scaleWithOnePlayer", false, "If true, dragon's health will be scaled even if there is only one player in The End.")
-        val countCreativeModePlayers by define(config, "general.countCreativeModePlayers", false, "If true, players in creative mode will be counted for health scaling.")
+        val enableMod by define(
+            config,
+            "general.enableMod",
+            true,
+            "Enable or disable the entire mod.")
+        val scaleWithOnePlayer by define(
+            config,
+            "general.scaleWithOnePlayer",
+            false,
+            "If true, dragon's health will be scaled even if there is only one player in The End.")
+        val countCreativeModePlayers by define(
+            config,
+            "general.countCreativeModePlayers",
+            false,
+            "If true, players in creative mode will be counted for health scaling.")
     }
 
     class HealthScaling(config: CommentedFileConfig) {
-        val baseDragonHealth by define(config, "healthScaling.baseDragonHealth", 200.0f, "The base health of the Ender Dragon.")
-        val additionalHealthPerPlayer by define(config, "healthScaling.additionalHealthPerPlayer", 100.0f, "How much health to add to the Ender Dragon for each additional player.")
+        val baseDragonHealth by define(
+            config,
+            "healthScaling.baseDragonHealth",
+            200.0f,
+            "The base health of the Ender Dragon.")
+        val additionalHealthPerPlayer by define(
+            config,
+            "healthScaling.additionalHealthPerPlayer",
+            100.0f,
+            "How much health to add to the Ender Dragon for each additional player.")
     }
 
     class BroadcastMessages(config: CommentedFileConfig) {
-        val enableBroadcast by define(config, "broadcastMessages.enableBroadcast", true, "Enable or disable broadcast messages (e.g., when the dragon's health is scaled).")
+        val enableBroadcast by define(
+            config,
+            "broadcastMessages.enableBroadcast",
+            true,
+            "Enable or disable broadcast messages (e.g., when the dragon's health is scaled).")
     }
 
     class Countdown(config: CommentedFileConfig) {
         // TODO Zeph: Use these new configurables
-        val enableCountdownOverworld by define(config, "countdown.enableCountdownOverworld", true, "Show the countdown to players in the Overworld.")
-        val enableCountdownTheEnd by define(config, "countdown.enableCountdownTheEnd", true, "Show the countdown to players in The End.")
-        val enableCountdownNether by define(config, "countdown.enableCountdownNether", false, "Show the countdown to players in the Nether.")
+        val enableCountdownOverworld by define(
+            config,
+            "countdown.enableCountdownOverworld",
+            true,
+            "Show the countdown to players in the Overworld.")
+        val enableCountdownTheEnd by define(
+            config,
+            "countdown.enableCountdownTheEnd",
+            true,
+            "Show the countdown to players in The End.")
+        val enableCountdownNether by define(
+            config,
+            "countdown.enableCountdownNether",
+            false,
+            "Show the countdown to players in the Nether.")
     }
 
     class SpawnDelay(config: CommentedFileConfig) {
-        val enableInitialSpawnDelay by define(config, "spawnDelay.enableInitialSpawnDelay", true, "Enable a delay before the Ender Dragon initially spawns.")
-        val initialSpawnDelaySeconds by define(config, "spawnDelay.initialSpawnDelaySeconds", 60, "The duration of the initial spawn delay in seconds.")
-        val showSpawnDelayCountdown by define(config, "spawnDelay.showSpawnDelayCountdown", true, "Show a countdown message for the initial spawn delay.")
+        val enableInitialSpawnDelay by define(
+            config,
+            "spawnDelay.enableInitialSpawnDelay",
+            true,
+            "Enable a delay before the Ender Dragon initially spawns.")
+        val initialSpawnDelaySeconds by define(
+            config,
+            "spawnDelay.initialSpawnDelaySeconds",
+            60,
+            "The duration of the initial spawn delay in seconds.")
+        val showSpawnDelayCountdown by define(
+            config,
+            "spawnDelay.showSpawnDelayCountdown",
+            true,
+            "Show a countdown message for the initial spawn delay.")
     }
 }
-
 
 /**
  * A generic helper function that creates a delegated property for a config value.
