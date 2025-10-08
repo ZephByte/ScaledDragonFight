@@ -51,6 +51,9 @@ dependencies {
     modImplementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
+
+    // Config
+    modImplementation("com.electronwill.night-config:toml:${project.property("night_config_version")}")
 }
 
 tasks.processResources {
