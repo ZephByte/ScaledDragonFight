@@ -58,7 +58,6 @@ showHealthInMessage = true          # Include dragon’s health value in broadca
 [initialSpawnDelay]
 enable = true                       # Delay the very first dragon spawn in The End
 delaySeconds = 60                   # Time (in seconds) before first dragon spawns
-showCountdown = true                # Show XP bar countdown during the delay
 
 # ─────────────────────────────
 # Miscellaneous

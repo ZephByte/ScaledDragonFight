@@ -7,8 +7,6 @@ import kotlin.properties.ReadOnlyProperty
 
 private object ConfigManager {
 
-    // The 'lateinit' keyword means we promise to initialize it before it's ever accessed.
-    // The 'private set' ensures that only the ConfigManager itself can replace the config object.
     lateinit var config: ConfigData
         private set
 
@@ -23,8 +21,6 @@ private object ConfigManager {
     fun reloadConfig() {
         val fileConfig = builder.build()
         fileConfig.load()
-        // A new ConfigData object is created, which reads all the latest values from the file.
-        // This new object then replaces the old one.
         config = ConfigData(fileConfig)
         fileConfig.save()
         fileConfig.close()
@@ -82,7 +78,6 @@ class ConfigData(fileConfig: CommentedFileConfig) {
     }
 
     class Countdown(config: CommentedFileConfig) {
-        // TODO Zeph: Use these new configurables
         val enableCountdownOverworld by define(
             config,
             "countdown.enableCountdownOverworld",
@@ -111,11 +106,6 @@ class ConfigData(fileConfig: CommentedFileConfig) {
             "spawnDelay.initialSpawnDelaySeconds",
             60,
             "The duration of the initial spawn delay in seconds.")
-        val showSpawnDelayCountdown by define(
-            config,
-            "spawnDelay.showSpawnDelayCountdown",
-            true,
-            "Show a countdown message for the initial spawn delay.")
     }
 }
 

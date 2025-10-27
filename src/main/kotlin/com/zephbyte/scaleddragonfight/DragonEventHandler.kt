@@ -105,12 +105,29 @@ object DragonEventHandler {
         if (state.delayActive && state.ticksRemaining > 0) {
             state.ticksRemaining--
 
-            if (SDFConfig.spawnDelay.showSpawnDelayCountdown) {
+            // Check if any countdown is enabled before doing calculations
+            val countdownConfig = SDFConfig.countdown
+            if (countdownConfig.enableCountdownTheEnd ||
+                countdownConfig.enableCountdownOverworld ||
+                countdownConfig.enableCountdownNether) {
                 val remainingSeconds = ceil(state.ticksRemaining / 20.0).toInt()
-                if (remainingSeconds > 0) { // Only show if time is actually remaining
+                if (remainingSeconds > 0) {
                     val message = Text.literal("Dragon spawning in: $remainingSeconds...")
-                    world.players.forEach { player ->
-                        player.sendMessage(message, true) // 'true' sends to action bar
+                    val server = world.server
+
+                    // Iterate through all players on the server
+                    server.playerManager.playerList.forEach { player ->
+                        val playerWorldKey = player.entityWorld.registryKey
+                        val shouldSendMessage = when (playerWorldKey) {
+                            World.END -> countdownConfig.enableCountdownTheEnd
+                            World.OVERWORLD -> countdownConfig.enableCountdownOverworld
+                            World.NETHER -> countdownConfig.enableCountdownNether
+                            else -> false // Don't send to custom dimensions by default
+                        }
+
+                        if (shouldSendMessage) {
+                            player.sendMessage(message, true)
+                        }
                     }
                 }
             }
@@ -120,11 +137,6 @@ object DragonEventHandler {
                 state.delayActive = false // Stop the delay state
 
                 state.fightInstance?.let { fight ->
-                    // This call will go through the EnderDragonFightMixin again.
-                    // onInitialDragonPreSpawn will see:
-                    // initialSpawnAttemptProcessed = true, delayActive = false.
-                    // So it returns false (don't cancel), allowing respawnDragon to proceed.
-                    // Cast to the accessor and call the invoker method
                     if (fight is EnderDragonFightAccessor) {
                         fight.callRespawnDragon(emptyList<EndCrystalEntity>()) // Use the accessor
                         LOGGER.info("Ender Dragon respawn initiated by the mod after delay via accessor.")
