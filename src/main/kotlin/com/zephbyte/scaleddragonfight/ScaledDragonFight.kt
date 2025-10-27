@@ -3,11 +3,11 @@ package com.zephbyte.scaleddragonfight
 import net.fabricmc.api.ModInitializer
 
 class ScaledDragonFight : ModInitializer {
-
     override fun onInitialize() {
         LOGGER.info("Scaled Dragon Fight mod initializing...")
 
-        ConfigManager.loadConfig()
+        LegacyConfigMigrator.runCheck()
+        SDFConfig.reload()
         DragonEventHandler.register()
         ModCommands.register()
 

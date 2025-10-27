@@ -1,6 +1,5 @@
 package com.zephbyte.scaleddragonfight
 
-import com.zephbyte.scaleddragonfight.ConfigManager.enableMod // Direct access to config
 import com.zephbyte.scaleddragonfight.mixin.EnderDragonFightAccessor
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
@@ -25,8 +24,8 @@ object DragonEventHandler {
 
     fun register() {
         ServerEntityEvents.ENTITY_LOAD.register { entity, world ->
-            // Check enableMod from ConfigManager
-            if (!enableMod) {
+            // Check if enabled in config
+            if (!SDFConfig.general.enableMod) {
                 return@register // If mod is disabled, do nothing
             }
 
@@ -53,7 +52,7 @@ object DragonEventHandler {
         val state = worldDelayStates.computeIfAbsent(world) { DelayState() }
 
         // Case 1: Feature is disabled in config
-        if (!ConfigManager.enableInitialSpawnDelay) {
+        if (!SDFConfig.spawnDelay.enableInitialSpawnDelay) {
             state.initialSpawnAttemptProcessed = true // Mark as processed, feature disabled
             if (state.delayActive) { // If a delay was somehow active and then config got disabled
                 state.delayActive = false
@@ -80,9 +79,9 @@ object DragonEventHandler {
         // Case 4: This is the first time for this world, feature enabled, not yet processed, not active.
         // This is where we initiate the delay.
         // (state.initialSpawnAttemptProcessed is false here, or it would have hit Case 2 or 3)
-        LOGGER.info("Initial Ender Dragon spawn in ${world.registryKey.value} will be delayed by ${ConfigManager.initialSpawnDelaySeconds} seconds.")
+        LOGGER.info("Initial Ender Dragon spawn in ${world.registryKey.value} will be delayed by ${SDFConfig.spawnDelay.initialSpawnDelaySeconds} seconds.")
         state.delayActive = true
-        state.ticksRemaining = ConfigManager.initialSpawnDelaySeconds * 20 // 20 ticks per second
+        state.ticksRemaining = SDFConfig.spawnDelay.initialSpawnDelaySeconds * 20 // 20 ticks per second
         state.initialSpawnAttemptProcessed = true // Mark that we've handled the first attempt
         state.fightInstance = fight // Store the fight instance to trigger spawn later
 
@@ -97,7 +96,7 @@ object DragonEventHandler {
         val state = worldDelayStates[world] ?: return // No state for this world, or delay not initiated
 
         // Handle if feature gets disabled mid-countdown (e.g., via /reload and config change)
-        if (!ConfigManager.enableInitialSpawnDelay && state.delayActive) {
+        if (!SDFConfig.spawnDelay.enableInitialSpawnDelay && state.delayActive) {
             LOGGER.info("Initial spawn delay feature disabled mid-countdown for ${world.registryKey.value}. Triggering dragon spawn now.")
             state.delayActive = false
             state.ticksRemaining = 0 // This will trigger the spawn logic below immediately
@@ -106,12 +105,29 @@ object DragonEventHandler {
         if (state.delayActive && state.ticksRemaining > 0) {
             state.ticksRemaining--
 
-            if (ConfigManager.showSpawnDelayCountdown) {
+            // Check if any countdown is enabled before doing calculations
+            val countdownConfig = SDFConfig.countdown
+            if (countdownConfig.enableCountdownTheEnd ||
+                countdownConfig.enableCountdownOverworld ||
+                countdownConfig.enableCountdownNether) {
                 val remainingSeconds = ceil(state.ticksRemaining / 20.0).toInt()
-                if (remainingSeconds > 0) { // Only show if time is actually remaining
+                if (remainingSeconds > 0) {
                     val message = Text.literal("Dragon spawning in: $remainingSeconds...")
-                    world.players.forEach { player ->
-                        player.sendMessage(message, true) // 'true' sends to action bar
+                    val server = world.server
+
+                    // Iterate through all players on the server
+                    server.playerManager.playerList.forEach { player ->
+                        val playerWorldKey = player.entityWorld.registryKey
+                        val shouldSendMessage = when (playerWorldKey) {
+                            World.END -> countdownConfig.enableCountdownTheEnd
+                            World.OVERWORLD -> countdownConfig.enableCountdownOverworld
+                            World.NETHER -> countdownConfig.enableCountdownNether
+                            else -> false // Don't send to custom dimensions by default
+                        }
+
+                        if (shouldSendMessage) {
+                            player.sendMessage(message, true)
+                        }
                     }
                 }
             }
@@ -121,11 +137,6 @@ object DragonEventHandler {
                 state.delayActive = false // Stop the delay state
 
                 state.fightInstance?.let { fight ->
-                    // This call will go through the EnderDragonFightMixin again.
-                    // onInitialDragonPreSpawn will see:
-                    // initialSpawnAttemptProcessed = true, delayActive = false.
-                    // So it returns false (don't cancel), allowing respawnDragon to proceed.
-                    // Cast to the accessor and call the invoker method
                     if (fight is EnderDragonFightAccessor) {
                         fight.callRespawnDragon(emptyList<EndCrystalEntity>()) // Use the accessor
                         LOGGER.info("Ender Dragon respawn initiated by the mod after delay via accessor.")
