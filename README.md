@@ -55,7 +55,7 @@ Requires permission level 2 (OP status).
 
 ## 🔌 Compatibility
 
-- Minecraft: `1.21.5, 1.21.7 - 1.21.9`
+- Minecraft: `1.21.5, 1.21.7 - 1.21.11`
 - Fabric Loader: `0.14+`
 - Fabric API required
 - **Server-side only** — no client-side installation needed
