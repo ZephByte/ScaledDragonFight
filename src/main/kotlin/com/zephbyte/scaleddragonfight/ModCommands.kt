@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.commands.Commands
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.network.chat.Component
+import net.minecraft.server.permissions.Permissions
 
 object ModCommands {
 
@@ -21,7 +22,7 @@ object ModCommands {
         dispatcher.register(
             Commands.literal(MOD_ID)
                 .then(Commands.literal("reload")
-                    .requires { source -> source.hasPermission(2) } // Only OPs (level 2) can reload
+                    .requires { source -> source.permissions().hasPermission(Permissions.COMMANDS_ADMIN) } // Only ADMINS can reload
                     .executes { context ->
                         ConfigManager.loadConfig() // Reload config from ConfigManager
                         val feedbackMsg = if (enableMod) { // Check enableMod from ConfigManager
