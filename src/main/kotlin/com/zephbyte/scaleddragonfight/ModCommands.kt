@@ -3,9 +3,9 @@ package com.zephbyte.scaleddragonfight
 import com.mojang.brigadier.CommandDispatcher
 import com.zephbyte.scaleddragonfight.ConfigManager.enableMod // Direct access to config
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
-import net.minecraft.server.command.CommandManager
-import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.text.Text
+import net.minecraft.commands.Commands
+import net.minecraft.commands.CommandSourceStack
+import net.minecraft.network.chat.Component
 
 object ModCommands {
 
@@ -16,12 +16,12 @@ object ModCommands {
     }
 
     private fun registerReloadCommand(
-        dispatcher: CommandDispatcher<ServerCommandSource>
+        dispatcher: CommandDispatcher<CommandSourceStack>
     ) {
         dispatcher.register(
-            CommandManager.literal(MOD_ID)
-                .then(CommandManager.literal("reload")
-                    .requires { source -> source.hasPermissionLevel(2) } // Only OPs (level 2) can reload
+            Commands.literal(MOD_ID)
+                .then(Commands.literal("reload")
+                    .requires { source -> source.hasPermission(2) } // Only OPs (level 2) can reload
                     .executes { context ->
                         ConfigManager.loadConfig() // Reload config from ConfigManager
                         val feedbackMsg = if (enableMod) { // Check enableMod from ConfigManager
@@ -29,7 +29,7 @@ object ModCommands {
                         } else {
                             "Scaled Dragon Fight configuration reloaded. Mod is DISABLED."
                         }
-                        context.source.sendFeedback({ Text.literal(feedbackMsg) }, true)
+                        context.source.sendSuccess({ Component.literal(feedbackMsg) }, true)
                         1 // Return 1 for success
                     }
                 )

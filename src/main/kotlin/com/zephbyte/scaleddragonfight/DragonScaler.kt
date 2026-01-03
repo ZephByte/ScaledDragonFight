@@ -1,24 +1,24 @@
 package com.zephbyte.scaleddragonfight
 
-// Import specific config values needed, or the whole ConfigManager
+// Import specific config values needed
 import com.zephbyte.scaleddragonfight.ConfigManager.additionalHealthPerPlayer
 import com.zephbyte.scaleddragonfight.ConfigManager.baseDragonHealth
 import com.zephbyte.scaleddragonfight.ConfigManager.countCreativeModePlayers
 import com.zephbyte.scaleddragonfight.ConfigManager.enableBroadcast
 import com.zephbyte.scaleddragonfight.ConfigManager.scaleWithOnePlayer
-import net.minecraft.entity.attribute.EntityAttributes
-import net.minecraft.entity.boss.dragon.EnderDragonEntity
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.text.Text
+import net.minecraft.world.entity.ai.attributes.Attributes
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.network.chat.Component
 
 object DragonScaler {
 
     private const val VANILLA_DRAGON_HEALTH = 200.0f // Vanilla default for comparison
 
-    fun scaleDragon(dragon: EnderDragonEntity, world: ServerWorld) {
+    fun scaleDragon(dragon: EnderDragon, level: ServerLevel) {
         // Filter players in The End and consider creative mode setting
-        val presentPlayers = world.players.filterIsInstance<ServerPlayerEntity>()
+        val presentPlayers = level.players().filterIsInstance<ServerPlayer>()
         val eligiblePlayers = presentPlayers.filter { player ->
             countCreativeModePlayers || !player.isCreative
         }
@@ -36,19 +36,19 @@ object DragonScaler {
         // Ensure health doesn't go below the configured base
         val finalMaxHealth = newMaxHealth.coerceAtLeast(baseDragonHealth)
 
-        dragon.getAttributeInstance(EntityAttributes.MAX_HEALTH)?.let { attributeInstance ->
+        dragon.getAttribute(Attributes.MAX_HEALTH)?.let { attributeInstance ->
             attributeInstance.baseValue = finalMaxHealth.toDouble()
             dragon.health = finalMaxHealth // Set current health to new max health
             LOGGER.info("Scaled Ender Dragon health. Eligible Players: $scaleEligiblePlayerCount, Players Adding Health: $playersContributingToAdditionalHealth, New Max Health: $finalMaxHealth (Base: $baseDragonHealth, Per Player Factor: $additionalHealthPerPlayer)")
         } ?: LOGGER.warn("Could not find GENERIC_MAX_HEALTH attribute for Ender Dragon. Health not scaled.")
 
         if (enableBroadcast) {
-            broadcastScalingMessage(world, scaleEligiblePlayerCount, finalMaxHealth)
+            broadcastScalingMessage(level, scaleEligiblePlayerCount, finalMaxHealth)
         }
     }
 
-    private fun broadcastScalingMessage(world: ServerWorld, scaleEligiblePlayerCount: Int, finalMaxHealth: Float) {
-        val server = world.server
+    private fun broadcastScalingMessage(level: ServerLevel, scaleEligiblePlayerCount: Int, finalMaxHealth: Float) {
+        val server = level.server
         val broadcastMessageText =
             if (scaleEligiblePlayerCount > 0 && (scaleWithOnePlayer || scaleEligiblePlayerCount > 1)) {
                 // Announce scaling if it happened and health is above vanilla default
@@ -60,7 +60,7 @@ object DragonScaler {
             } else {
                 "An ENDER DRAGON has appeared in THE END!"
             }
-        val message = Text.literal(broadcastMessageText)
-        server.playerManager.broadcast(message, false)
+        val message = Component.literal(broadcastMessageText)
+        server.playerList.broadcastSystemMessage(message, false)
     }
 }
