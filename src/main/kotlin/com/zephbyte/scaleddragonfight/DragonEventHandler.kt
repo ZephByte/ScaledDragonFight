@@ -4,12 +4,12 @@ import com.zephbyte.scaleddragonfight.ConfigManager.enableMod // Direct access t
 import com.zephbyte.scaleddragonfight.mixin.EnderDragonFightAccessor
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
-import net.minecraft.entity.boss.dragon.EnderDragonEntity
-import net.minecraft.entity.boss.dragon.EnderDragonFight
-import net.minecraft.entity.decoration.EndCrystalEntity
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.text.Text
-import net.minecraft.world.World
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon
+import net.minecraft.world.level.dimension.end.EndDragonFight
+import net.minecraft.world.entity.boss.enderdragon.EndCrystal
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.network.chat.Component
+import net.minecraft.world.level.Level
 import kotlin.math.ceil
 
 object DragonEventHandler {
@@ -18,22 +18,22 @@ object DragonEventHandler {
         var delayActive: Boolean = false,
         var ticksRemaining: Int = 0,
         var initialSpawnAttemptProcessed: Boolean = false, // To ensure we only delay the *very first* attempt
-        var fightInstance: EnderDragonFight? = null // To store the fight instance for later spawning
+        var fightInstance: EndDragonFight? = null // To store the fight instance for later spawning
     )
 
-    private val worldDelayStates = mutableMapOf<ServerWorld, DelayState>()
+    private val levelDelayStates = mutableMapOf<ServerLevel, DelayState>()
 
     fun register() {
-        ServerEntityEvents.ENTITY_LOAD.register { entity, world ->
+        ServerEntityEvents.ENTITY_LOAD.register { entity, level ->
             // Check enableMod from ConfigManager
             if (!enableMod) {
                 return@register // If mod is disabled, do nothing
             }
 
-            if (world is ServerWorld && entity is EnderDragonEntity && world.registryKey == World.END) {
+            if (level is ServerLevel && entity is EnderDragon && level.dimension() == Level.END) {
                 LOGGER.info("Ender Dragon detected loading in The End! Checking scaling conditions...")
                 // Delegate the actual scaling logic to DragonScaler
-                DragonScaler.scaleDragon(entity, world)
+                DragonScaler.scaleDragon(entity, level)
             }
         }
 
@@ -47,10 +47,10 @@ object DragonEventHandler {
      * Called from EnderDragonFightMixin to intercept the initial dragon spawn.
      * Returns true if the original spawn should be cancelled (i.e., we are delaying it).
      */
-    fun onInitialDragonPreSpawn(fight: EnderDragonFight, world: ServerWorld): Boolean {
-        if (world.registryKey != World.END) return false // Should always be The End from the mixin context
+    fun onInitialDragonPreSpawn(fight: EndDragonFight, level: ServerLevel): Boolean {
+        if (level.dimension() != Level.END) return false // Should always be The End from the mixin context
 
-        val state = worldDelayStates.computeIfAbsent(world) { DelayState() }
+        val state = levelDelayStates.computeIfAbsent(level) { DelayState() }
 
         // Case 1: Feature is disabled in config
         if (!ConfigManager.enableInitialSpawnDelay) {
@@ -80,7 +80,7 @@ object DragonEventHandler {
         // Case 4: This is the first time for this world, feature enabled, not yet processed, not active.
         // This is where we initiate the delay.
         // (state.initialSpawnAttemptProcessed is false here, or it would have hit Case 2 or 3)
-        LOGGER.info("Initial Ender Dragon spawn in ${world.registryKey.value} will be delayed by ${ConfigManager.initialSpawnDelaySeconds} seconds.")
+        LOGGER.info("Initial Ender Dragon spawn in ${level.dimension()} will be delayed by ${ConfigManager.initialSpawnDelaySeconds} seconds.")
         state.delayActive = true
         state.ticksRemaining = ConfigManager.initialSpawnDelaySeconds * 20 // 20 ticks per second
         state.initialSpawnAttemptProcessed = true // Mark that we've handled the first attempt
@@ -89,16 +89,16 @@ object DragonEventHandler {
         return true // Cancel the immediate vanilla spawn
     }
 
-    private fun onWorldTick(world: ServerWorld) {
-        // This method is registered for END_WORLD_TICK, so world.registryKey should be World.END
+    private fun onWorldTick(level: ServerLevel) {
+        // This method is registered for END_WORLD_TICK, so world..dimension() should be World.END
         // but a check doesn't hurt if you ever change registration.
-        if (world.registryKey != World.END) return
+        if (level.dimension() != Level.END) return
 
-        val state = worldDelayStates[world] ?: return // No state for this world, or delay not initiated
+        val state = levelDelayStates[level] ?: return // No state for this world, or delay not initiated
 
         // Handle if feature gets disabled mid-countdown (e.g., via /reload and config change)
         if (!ConfigManager.enableInitialSpawnDelay && state.delayActive) {
-            LOGGER.info("Initial spawn delay feature disabled mid-countdown for ${world.registryKey.value}. Triggering dragon spawn now.")
+            LOGGER.info("Initial spawn delay feature disabled mid-countdown for ${level.dimension()}. Triggering dragon spawn now.")
             state.delayActive = false
             state.ticksRemaining = 0 // This will trigger the spawn logic below immediately
         }
@@ -109,15 +109,15 @@ object DragonEventHandler {
             if (ConfigManager.showSpawnDelayCountdown) {
                 val remainingSeconds = ceil(state.ticksRemaining / 20.0).toInt()
                 if (remainingSeconds > 0) { // Only show if time is actually remaining
-                    val message = Text.literal("Dragon spawning in: $remainingSeconds...")
-                    world.players.forEach { player ->
-                        player.sendMessage(message, true) // 'true' sends to action bar
+                    val message = Component.literal("Dragon spawning in: $remainingSeconds...")
+                    level.players().forEach { player ->
+                        player.displayClientMessage(message, true) // 'true' sends to action bar
                     }
                 }
             }
 
             if (state.ticksRemaining <= 0) {
-                LOGGER.info("Initial spawn delay finished for ${world.registryKey.value}. Triggering Ender Dragon spawn.")
+                LOGGER.info("Initial spawn delay finished for ${level.dimension()}. Triggering Ender Dragon spawn.")
                 state.delayActive = false // Stop the delay state
 
                 state.fightInstance?.let { fight ->
@@ -127,12 +127,12 @@ object DragonEventHandler {
                     // So it returns false (don't cancel), allowing respawnDragon to proceed.
                     // Cast to the accessor and call the invoker method
                     if (fight is EnderDragonFightAccessor) {
-                        fight.callRespawnDragon(emptyList<EndCrystalEntity>()) // Use the accessor
+                        fight.callRespawnDragon(emptyList<EndCrystal>()) // Use the accessor
                         LOGGER.info("Ender Dragon respawn initiated by the mod after delay via accessor.")
                     } else {
                         LOGGER.error("Could not cast EnderDragonFight to EnderDragonFightAccessor. Dragon not spawned post-delay.")
                     }
-                } ?: LOGGER.error("EnderDragonFight instance was null when trying to spawn dragon post-delay for ${world.registryKey.value}")
+                } ?: LOGGER.error("EnderDragonFight instance was null when trying to spawn dragon post-delay for ${level.dimension()}")
             }
         }
     }
