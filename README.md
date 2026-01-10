@@ -66,7 +66,8 @@ Requires permission level 2 (OP status).
 
 1. Install [Fabric Loader](https://fabricmc.net/) on your server.
 2. Install [Fabric API](https://modrinth.com/mod/fabric-api) on the server.
-3. Drop the `scaleddragonfight-x.x.x.jar` into the server’s `mods` folder.
+3. Place the `scaleddragonfight-vX.X.X_X.X.X.jar` into your server's `mods` folder. 
+   *(Note: The first version number is the mod version, and the second is the Minecraft version, e.g., `v1.1.0_1.21.1`)*
 4. Start the server once to generate the config file.
 5. Modify the config if desired and reload with `/scaleddragonfight reload`.
 
