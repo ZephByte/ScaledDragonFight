@@ -56,10 +56,12 @@ Requires permission level 2 (OP status).
 ## 🔌 Compatibility
 
 - Minecraft: `1.21.5, 1.21.7 - 1.21.11`
-- Fabric Loader: `0.14+`
+- Fabric Loader: Latest stable version for your Minecraft version
 - Fabric API required
 - **Server-side only** — no client-side installation needed
 
+
+> **⚠️ Mod/Datapack Interactions:** This mod modifies vanilla Ender Dragon spawning logic. It may exhibit unintended behavior or conflicts with other mods/datapacks that introduce custom dragon spawning mechanics (e.g., True Ending). While I aim to improve compatibility in the future, full support for third-party dragon overhauls is not guaranteed.
 ---
 
 ## 📦 Installation
