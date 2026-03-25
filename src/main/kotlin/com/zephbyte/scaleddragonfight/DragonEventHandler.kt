@@ -5,7 +5,7 @@ import com.zephbyte.scaleddragonfight.mixin.EnderDragonFightAccessor
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon
-import net.minecraft.world.level.dimension.end.EndDragonFight
+import net.minecraft.world.level.dimension.end.EnderDragonFight
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.network.chat.Component
@@ -18,7 +18,7 @@ object DragonEventHandler {
         var delayActive: Boolean = false,
         var ticksRemaining: Int = 0,
         var initialSpawnAttemptProcessed: Boolean = false, // To ensure we only delay the *very first* attempt
-        var fightInstance: EndDragonFight? = null // To store the fight instance for later spawning
+        var fightInstance: EnderDragonFight? = null // To store the fight instance for later spawning
     )
 
     private val levelDelayStates = mutableMapOf<ServerLevel, DelayState>()
@@ -38,7 +38,7 @@ object DragonEventHandler {
         }
 
         // Register for world ticks in The End to manage the countdown
-        ServerTickEvents.END_WORLD_TICK.register(::onWorldTick)
+        ServerTickEvents.END_LEVEL_TICK.register(::onWorldTick)
 
         LOGGER.info("DragonEventHandler registered for spawn delay and scaling.")
     }
@@ -47,7 +47,7 @@ object DragonEventHandler {
      * Called from EnderDragonFightMixin to intercept the initial dragon spawn.
      * Returns true if the original spawn should be cancelled (i.e., we are delaying it).
      */
-    fun onInitialDragonPreSpawn(fight: EndDragonFight, level: ServerLevel): Boolean {
+    fun onInitialDragonPreSpawn(fight: EnderDragonFight, level: ServerLevel): Boolean {
         if (level.dimension() != Level.END) return false // Should always be The End from the mixin context
 
         val state = levelDelayStates.computeIfAbsent(level) { DelayState() }
@@ -111,7 +111,7 @@ object DragonEventHandler {
                 if (remainingSeconds > 0) { // Only show if time is actually remaining
                     val message = Component.literal("Dragon spawning in: $remainingSeconds...")
                     level.players().forEach { player ->
-                        player.displayClientMessage(message, true) // 'true' sends to action bar
+                        player.sendOverlayMessage(message)
                     }
                 }
             }
