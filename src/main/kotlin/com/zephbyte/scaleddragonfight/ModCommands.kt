@@ -23,8 +23,8 @@ object ModCommands {
                 .then(Commands.literal("reload")
                     .requires { source -> source.permissions().hasPermission(Permissions.COMMANDS_ADMIN) } // Only ADMINS can reload
                     .executes { context ->
-                        SDFConfig.reload() // Reload config from ConfigManager
-                        val feedbackMsg = if (SDFConfig.general.enableMod) { // Check enableMod from ConfigManager
+                        SDFConfig.reload()
+                        val feedbackMsg = if (SDFConfig.general.enableMod) {
                             "Scaled Dragon Fight configuration reloaded. Mod is ENABLED."
                         } else {
                             "Scaled Dragon Fight configuration reloaded. Mod is DISABLED."

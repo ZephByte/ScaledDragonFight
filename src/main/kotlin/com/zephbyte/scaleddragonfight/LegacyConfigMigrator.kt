@@ -91,7 +91,8 @@ object LegacyConfigMigrator {
 
         var count = 0
         try {
-            CommentedFileConfig.builder(tomlFile).writingMode(WritingMode.REPLACE).build().use { toml ->
+            // sync(): the default config is async, and SDFConfig.reload() reads this file right after.
+            CommentedFileConfig.builder(tomlFile).sync().writingMode(WritingMode.REPLACE).build().use { toml ->
                 for ((oldKey, newPath, parse) in mapping) {
                     val value = props.getProperty(oldKey)?.let(parse) ?: continue
                     toml.set<Any>(newPath, value)

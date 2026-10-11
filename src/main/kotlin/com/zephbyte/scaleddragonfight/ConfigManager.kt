@@ -11,6 +11,7 @@ private object ConfigManager {
         private set
 
     private val builder = CommentedFileConfig.builder(FabricLoader.getInstance().configDir.resolve("$MOD_ID.toml"))
+        .sync()
         .autosave()
         .writingMode(WritingMode.REPLACE)
 

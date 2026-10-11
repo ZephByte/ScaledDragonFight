@@ -47,24 +47,22 @@ additionalHealthPerPlayer = 100.0   # Extra health added per eligible player
 # Broadcast Messages
 # ─────────────────────────────
 [broadcastMessages]
-enable = true                       # Enable or disable broadcast messages
-onSpawn = true                      # Send message when a scaled dragon spawns
-onDeath = false                     # Send message when the dragon is defeated
-showHealthInMessage = true          # Include dragon’s health value in broadcast
+enableBroadcast = true              # Enable or disable broadcast messages
 
 # ─────────────────────────────
 # Initial Spawn Delay
 # ─────────────────────────────
-[initialSpawnDelay]
-enable = true                       # Delay the very first dragon spawn in The End
-delaySeconds = 60                   # Time (in seconds) before first dragon spawns
+[spawnDelay]
+enableInitialSpawnDelay = true      # Delay the very first dragon spawn in The End
+initialSpawnDelaySeconds = 60       # Time (in seconds) before first dragon spawns
 
 # ─────────────────────────────
-# Miscellaneous
+# XP Bar Countdown
 # ─────────────────────────────
-[misc]
-logDebugInfo = false                # Enable extra debug logging in console
-
+[countdown]
+enableCountdownOverworld = true     # Show the countdown to players in the Overworld
+enableCountdownTheEnd = true        # Show the countdown to players in The End
+enableCountdownNether = false       # Show the countdown to players in the Nether
 ```
 
 ---
