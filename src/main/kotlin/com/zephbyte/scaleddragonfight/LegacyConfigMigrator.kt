@@ -2,11 +2,12 @@ package com.zephbyte.scaleddragonfight
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.text.ClickEvent
-import net.minecraft.text.HoverEvent
-import net.minecraft.text.Style
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
+import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.ClickEvent
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.HoverEvent
+import net.minecraft.network.chat.Style
+import net.minecraft.server.permissions.Permissions
 import java.net.URI
 import java.nio.file.Files
 
@@ -31,39 +32,39 @@ object LegacyConfigMigrator {
 
             // Register an event to notify the first OP that joins
             ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
-                if (!updateNotificationSent && handler.player.hasPermissionLevel(2)) {
+                if (!updateNotificationSent && handler.player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
                     val changelogUrl = URI("https://modrinth.com/mod/scaled-dragon-fight/version/v1.0.1+1.21.10") // TODO Zeph: Update this link when releasing
-                    val changelogText = Text.literal("[Changelog for v2.0.0]")
+                    val changelogText = Component.literal("[Changelog for v2.0.0]")
                         .setStyle(
                             Style.EMPTY
                                 .withClickEvent(ClickEvent.OpenUrl(changelogUrl))
-                                .withHoverEvent(HoverEvent.ShowText(Text.literal("Click to open changelog")))
-                                .withColor(Formatting.BLUE)
-                                .withFormatting(Formatting.UNDERLINE, Formatting.ITALIC)
+                                .withHoverEvent(HoverEvent.ShowText(Component.literal("Click to open changelog")))
+                                .withColor(ChatFormatting.BLUE)
+                                .withUnderlined(true).withItalic(true)
                         )
 
-                    val reloadCommandText = Text.literal("/scaleddragonfight reload")
+                    val reloadCommandText = Component.literal("/scaleddragonfight reload")
                         .setStyle(
                             Style.EMPTY
-                                .withColor(Formatting.AQUA)
+                                .withColor(ChatFormatting.AQUA)
                                 .withClickEvent(ClickEvent.SuggestCommand("/scaleddragonfight reload"))
-                                .withHoverEvent(HoverEvent.ShowText(Text.literal("Click to suggest command")))
+                                .withHoverEvent(HoverEvent.ShowText(Component.literal("Click to suggest command")))
                         )
 
-                    val fullMessage = Text.literal("")
-                        .append(Text.literal("IMPORTANT CONFIG UPDATE\n").formatted(Formatting.RED, Formatting.BOLD))
-                        .append(Text.literal("Scaled Dragon Fight").formatted(Formatting.GOLD))
-                        .append(Text.literal(" ALL CONFIG SETTINGS have been reset to default for v2.0.0.\n").formatted(Formatting.YELLOW))
-                        .append(Text.literal("Your old settings were saved to ").formatted(Formatting.GRAY))
-                        .append(Text.literal("config/scaleddragonfight.properties.bak\n").formatted(Formatting.AQUA))
-                        .append(Text.literal("After migrating settings, run ").formatted(Formatting.GRAY))
+                    val fullMessage = Component.literal("")
+                        .append(Component.literal("IMPORTANT CONFIG UPDATE\n").withStyle(ChatFormatting.RED, ChatFormatting.BOLD))
+                        .append(Component.literal("Scaled Dragon Fight").withStyle(ChatFormatting.GOLD))
+                        .append(Component.literal(" ALL CONFIG SETTINGS have been reset to default for v2.0.0.\n").withStyle(ChatFormatting.YELLOW))
+                        .append(Component.literal("Your old settings were saved to ").withStyle(ChatFormatting.GRAY))
+                        .append(Component.literal("config/scaleddragonfight.properties.bak\n").withStyle(ChatFormatting.AQUA))
+                        .append(Component.literal("After migrating settings, run ").withStyle(ChatFormatting.GRAY))
                         .append(reloadCommandText)
-                        .append(Text.literal(" to apply them without a restart.\n").formatted(Formatting.GRAY))
-                        .append(Text.literal("See the ").formatted(Formatting.GRAY))
+                        .append(Component.literal(" to apply them without a restart.\n").withStyle(ChatFormatting.GRAY))
+                        .append(Component.literal("See the ").withStyle(ChatFormatting.GRAY))
                         .append(changelogText)
-                        .append(Text.literal(" for more info.").formatted(Formatting.GRAY))
+                        .append(Component.literal(" for more info.").withStyle(ChatFormatting.GRAY))
 
-                    handler.player.sendMessage(fullMessage, false)
+                    handler.player.sendSystemMessage(fullMessage)
                     updateNotificationSent = true // Ensure we only send this once per server start
                 }
             }
