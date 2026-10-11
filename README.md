@@ -11,7 +11,7 @@ No installation is needed on the client — just drop it into your server's `mod
 - 📈 **Dynamic Health Scaling:** The Ender Dragon's max health increases with each eligible player in The End.
 - ⏱️ **Initial Spawn Delay:** Optionally delay the very first dragon spawn and show a countdown on players’ XP bars.
 - ⚙️ **Server-Side Only:** No client installation required — perfect for modded or vanilla-compatible SMPs.
-- 🔧 **Configurable:** Customize how scaling and spawn delays work via a simple `.properties` config file.
+- 🔧 **Configurable:** Customize how scaling and spawn delays work via a structured `.toml` config file.
 - 📢 **Broadcast Messages:** Optional announcements when a scaled dragon appears.
 - 🛠️ **In-Game Reload:** `/scaleddragonfight reload` command to reload configuration without restarting the server.
 
@@ -22,23 +22,47 @@ No installation is needed on the client — just drop it into your server's `mod
 After first launch, a config file will be generated at:
 
 ```
-/config/scaleddragonfight.properties
+/config/scaleddragonfight.toml
 ```
 
 You can configure:
 
 ```
-enableMod=true                          # Enable or disable the mod
-scaleWithOnePlayer=false                # Whether scaling starts with the first player
-countCreativeModePlayers=false          # Include creative players in scaling
-baseDragonHealth=200.0                  # Base health of the Ender Dragon
-additionalHealthPerPlayer=100.0         # Health added per eligible player
-enableBroadcast=true                    # Enable broadcast when dragon spawns
+# ─────────────────────────────
+# General Settings
+# ─────────────────────────────
+[general]
+enableMod = true                    # Master enable/disable switch for the mod
+scaleWithOnePlayer = false          # Whether scaling should start with the first player
+countCreativeModePlayers = false    # Include players in Creative mode when scaling
 
+# ─────────────────────────────
+# Dragon Health Scaling
+# ─────────────────────────────
+[healthScaling]
+baseDragonHealth = 200.0            # Base health of the Ender Dragon (vanilla default = 200)
+additionalHealthPerPlayer = 100.0   # Extra health added per eligible player
+
+# ─────────────────────────────
+# Broadcast Messages
+# ─────────────────────────────
+[broadcastMessages]
+enableBroadcast = true              # Enable or disable broadcast messages
+
+# ─────────────────────────────
 # Initial Spawn Delay
-enableInitialSpawnDelay=true            # Delay the first dragon spawn in The End
-initialSpawnDelaySeconds=60             # Time (in seconds) before first dragon spawns
-showSpawnDelayCountdown=true            # Show countdown above XP bar during delay
+# ─────────────────────────────
+[spawnDelay]
+enableInitialSpawnDelay = true      # Delay the very first dragon spawn in The End
+initialSpawnDelaySeconds = 60       # Time (in seconds) before first dragon spawns
+
+# ─────────────────────────────
+# XP Bar Countdown
+# ─────────────────────────────
+[countdown]
+enableCountdownOverworld = true     # Show the countdown to players in the Overworld
+enableCountdownTheEnd = true        # Show the countdown to players in The End
+enableCountdownNether = false       # Show the countdown to players in the Nether
 ```
 
 ---
@@ -50,6 +74,16 @@ showSpawnDelayCountdown=true            # Show countdown above XP bar during del
 | `/scaleddragonfight reload`  | Reloads the mod’s configuration     |
 
 Requires permission level 2 (OP status).
+
+---
+
+## ❓ FAQ
+
+**1. What happened to my configuration after updating to v2.0.0?**
+
+Version 2.0.0 switched the config file from `.properties` to the new `.toml` format. Your old settings are automatically imported into `config/scaleddragonfight.toml`, and the original file is backed up to `config/scaleddragonfight.properties.bak`.
+
+Please review the new file, since the single countdown option was split into one toggle per dimension. You can then run `/scaleddragonfight reload` to apply changes without a server restart. For more details, see the v2.0.0 Changelog.
 
 ---
 
