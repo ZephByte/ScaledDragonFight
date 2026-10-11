@@ -81,11 +81,11 @@ Requires permission level 2 (OP status).
 
 ## ❓ FAQ
 
-**1. Why did my configuration reset after updating to v2.0.0?**
+**1. What happened to my configuration after updating to v2.0.0?**
 
-Version 2.0.0 switched the config file from `.properties` to the new `.toml` format. Your old settings were automatically backed up to `config/scaleddragonfight.properties.bak`.
+Version 2.0.0 switched the config file from `.properties` to the new `.toml` format. Your old settings are automatically imported into `config/scaleddragonfight.toml`, and the original file is backed up to `config/scaleddragonfight.properties.bak`.
 
-Please copy your settings to the new `scaleddragonfight.toml` file. You can then run `/scaleddragonfight reload` to apply changes without a server restart. For more details, see the v2.0.0 Changelog.
+Please review the new file, since the single countdown option was split into one toggle per dimension. You can then run `/scaleddragonfight reload` to apply changes without a server restart. For more details, see the v2.0.0 Changelog.
 
 ---
 
