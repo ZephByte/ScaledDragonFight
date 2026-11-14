@@ -73,7 +73,7 @@ enableCountdownNether = false       # Show the countdown to players in the Nethe
 |------------------------------|-------------------------------------|
 | `/scaleddragonfight reload`  | Reloads the mod’s configuration     |
 
-Requires permission level 2 (OP status).
+Requires permission level 3 or higher (server ops have level 4 by default).
 
 ---
 
