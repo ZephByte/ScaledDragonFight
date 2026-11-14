@@ -1,13 +1,21 @@
 package com.zephbyte.scaleddragonfight.mixin;
 
+//? if >=26 {
 import net.minecraft.world.level.dimension.end.EnderDragonFight;
+//?} else {
+/*import net.minecraft.world.level.dimension.end.EndDragonFight;
+*///?}
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 import java.util.List; // Import List
 
+//? if >=26 {
 @Mixin(EnderDragonFight.class)
+//?} else {
+/*@Mixin(EndDragonFight.class)
+*///?}
 public interface EnderDragonFightAccessor {
     /**
      * Allows calling the private 'respawnDragon(List<EndCrystal>)' method

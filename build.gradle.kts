@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "2.3.0"
-    id("net.fabricmc.fabric-loom") version "1.15-SNAPSHOT"
+    id("fabric-loom") version "1.15-SNAPSHOT"
     id("maven-publish")
     id("me.modmuss50.mod-publish-plugin") version "0.8.4"
 }
@@ -15,9 +15,10 @@ base {
     archivesName.set(project.property("archives_base_name") as String)
 }
 
-val targetJavaVersion = 25
+val obfuscated = stonecutter.eval(stonecutter.current.version, "<26")
+val targetJavaVersion = if (obfuscated) 21 else 25
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    toolchain.languageVersion = JavaLanguageVersion.of(25)
     // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
     // if it is present.
     // If you remove this line, sources will not be generated.
@@ -47,9 +48,19 @@ repositories {
 dependencies {
     // To change the versions see the gradle.properties file
     minecraft("com.mojang:minecraft:${project.property("minecraft_version")}")
-    implementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
-    implementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
-    implementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
+    if (obfuscated) {
+        mappings(loom.officialMojangMappings())
+    } else {
+        // 26.x ships unobfuscated; intermediary 0.0.0 is an identity passthrough that satisfies Loom.
+        mappings("net.fabricmc:intermediary:0.0.0:v2")
+        // The remapping plugin leaves Mixin off the compile classpath for unobfuscated versions.
+        implementation("net.fabricmc:sponge-mixin:${project.property("mixin_version")}")
+    }
+    // Obfuscated versions need mod dependencies remapped to Mojang names.
+    val modDependency = if (obfuscated) "modImplementation" else "implementation"
+    modDependency("net.fabricmc:fabric-loader:${project.property("loader_version")}")
+    modDependency("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
+    modDependency("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
 
     // Config (bundled into the mod jar via jar-in-jar)
     implementation("com.electronwill.night-config:toml:${project.property("night_config_version")}")
@@ -88,6 +99,16 @@ tasks.withType<KotlinCompile>().configureEach {
     compilerOptions.jvmTarget.set(JvmTarget.fromTarget(targetJavaVersion.toString()))
 }
 
+// Dev servers run on the Java version real servers use; older loaders can't read Java 25 classes.
+tasks.withType<net.fabricmc.loom.task.AbstractRunTask>().configureEach {
+    javaLauncher.set(javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(targetJavaVersion)) })
+}
+
+// The intermediary passthrough has no "named" namespace, so sources can only be remapped for obfuscated versions.
+tasks.remapSourcesJar {
+    enabled = obfuscated
+}
+
 tasks.jar {
     from("LICENSE") {
         rename { "${it}_${project.base.archivesName}" }
@@ -116,7 +137,7 @@ val modVersion = project.version as String
 val gameVersionList = (project.property("modrinth_versions") as String).split(",").map { it.trim() }
 
 publishMods {
-    file.set(tasks.jar.flatMap { it.archiveFile })
+    file.set(tasks.remapJar.flatMap { it.archiveFile })
     version.set(modVersion)
     changelog.set(providers.environmentVariable("CHANGELOG").orElse(""))
     type.set(
