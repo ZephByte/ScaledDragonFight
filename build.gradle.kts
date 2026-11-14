@@ -5,6 +5,7 @@ plugins {
     kotlin("jvm") version "2.3.0"
     id("net.fabricmc.fabric-loom") version "1.15-SNAPSHOT"
     id("maven-publish")
+    id("me.modmuss50.mod-publish-plugin") version "0.8.4"
 }
 
 version = "${project.property("mod_version")}+${stonecutter.current.version}"
@@ -108,5 +109,30 @@ publishing {
         // Notice: This block does NOT have the same function as the block in the top level.
         // The repositories here will be used for publishing your artifact, not for
         // retrieving dependencies.
+    }
+}
+
+val modVersion = project.version as String
+val gameVersionList = (project.property("modrinth_versions") as String).split(",").map { it.trim() }
+
+publishMods {
+    file.set(tasks.jar.flatMap { it.archiveFile })
+    version.set(modVersion)
+    changelog.set(providers.environmentVariable("CHANGELOG").orElse(""))
+    type.set(
+        when {
+            modVersion.contains("-alpha") -> ALPHA
+            modVersion.contains("-beta")  -> BETA
+            else                          -> STABLE
+        }
+    )
+    modLoaders.add("fabric")
+
+    modrinth {
+        accessToken.set(providers.environmentVariable("MODRINTH_TOKEN").orElse(""))
+        projectId.set(providers.gradleProperty("modrinth_id").orElse(""))
+        minecraftVersions.addAll(gameVersionList)
+        requires { slug.set("fabric-api") }
+        requires { slug.set("fabric-language-kotlin") }
     }
 }
