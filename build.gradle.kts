@@ -7,7 +7,7 @@ plugins {
     id("maven-publish")
 }
 
-version = project.property("mod_version") as String
+version = "${project.property("mod_version")}+${stonecutter.current.version}"
 group = project.property("maven_group") as String
 
 base {
@@ -60,12 +60,14 @@ tasks.processResources {
     inputs.property("version", project.version)
     inputs.property("minecraft_version", project.property("minecraft_version"))
     inputs.property("loader_version", project.property("loader_version"))
+    inputs.property("minecraft_dependency", project.property("minecraft_dependency"))
     filteringCharset = "UTF-8"
 
     filesMatching("fabric.mod.json") {
         expand(
             "version" to project.version,
             "minecraft_version" to project.property("minecraft_version") as String,
+            "minecraft_dependency" to project.property("minecraft_dependency") as String,
             "loader_version" to project.property("loader_version") as String,
             "kotlin_loader_version" to project.property("kotlin_loader_version") as String
         )
