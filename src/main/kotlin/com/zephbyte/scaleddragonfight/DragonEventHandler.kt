@@ -4,7 +4,11 @@ import com.zephbyte.scaleddragonfight.mixin.EnderDragonFightAccessor
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon
+//? if >=26 {
 import net.minecraft.world.level.dimension.end.EnderDragonFight
+//?} else {
+/*import net.minecraft.world.level.dimension.end.EndDragonFight as EnderDragonFight
+*///?}
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.network.chat.Component
@@ -37,7 +41,11 @@ object DragonEventHandler {
         }
 
         // Register for world ticks in The End to manage the countdown
+        //? if >=26 {
         ServerTickEvents.END_LEVEL_TICK.register(::onWorldTick)
+        //?} else {
+        /*ServerTickEvents.END_WORLD_TICK.register(::onWorldTick)
+        *///?}
 
         LOGGER.info("DragonEventHandler registered for spawn delay and scaling.")
     }
@@ -124,7 +132,11 @@ object DragonEventHandler {
                         }
 
                         if (shouldSendMessage) {
+                            //? if >=26 {
                             player.sendOverlayMessage(message)
+                            //?} else {
+                            /*player.displayClientMessage(message, true)
+                            *///?}
                         }
                     }
                 }

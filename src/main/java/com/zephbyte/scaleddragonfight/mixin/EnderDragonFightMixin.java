@@ -2,7 +2,11 @@ package com.zephbyte.scaleddragonfight.mixin;
 
 import com.zephbyte.scaleddragonfight.DragonEventHandler;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+//? if >=26 {
 import net.minecraft.world.level.dimension.end.EnderDragonFight;
+//?} else {
+/*import net.minecraft.world.level.dimension.end.EndDragonFight;
+*///?}
 import net.minecraft.server.level.ServerLevel;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,7 +16,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 
+//? if >=26 {
 @Mixin(EnderDragonFight.class)
+//?} else {
+/*@Mixin(EndDragonFight.class)
+*///?}
 public abstract class EnderDragonFightMixin {
 
     @Shadow
@@ -23,12 +31,16 @@ public abstract class EnderDragonFightMixin {
     public abstract boolean hasPreviouslyKilledDragon();
 
     @Inject(
-            method = "Lnet/minecraft/world/level/dimension/end/EnderDragonFight;createNewDragon()Lnet/minecraft/world/entity/boss/enderdragon/EnderDragon;", // Target createDragon()
+            method = "createNewDragon()Lnet/minecraft/world/entity/boss/enderdragon/EnderDragon;", // Target createDragon()
             at = @At("HEAD"),
             cancellable = true
     )
     private void scaleddragonfight_onPreCreateDragon(CallbackInfoReturnable<EnderDragon> cir) { // Updated parameter
+        //? if >=26 {
         EnderDragonFight fightInstance = (EnderDragonFight) (Object) this;
+        //?} else {
+        /*EndDragonFight fightInstance = (EndDragonFight) (Object) this;
+        *///?}
 
         // We only want to delay the *very first* dragon spawn in this world.
         // hasPreviouslyKilled() is the best check for this.

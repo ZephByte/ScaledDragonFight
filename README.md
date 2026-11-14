@@ -73,7 +73,7 @@ enableCountdownNether = false       # Show the countdown to players in the Nethe
 |------------------------------|-------------------------------------|
 | `/scaleddragonfight reload`  | Reloads the mod’s configuration     |
 
-Requires permission level 2 (OP status).
+Requires permission level 3 or higher (server ops have level 4 by default).
 
 ---
 
@@ -89,7 +89,7 @@ Please review the new file, since the single countdown option was split into one
 
 ## 🔌 Compatibility
 
-- Minecraft: `26.1 - 26.3`
+- Minecraft: `1.21.4 - 1.21.5, 1.21.7 - 1.21.11, 26.1 - 26.3`
 - Fabric Loader: Latest stable version for your Minecraft version
 - Fabric API required
 - **Server-side only** — no client-side installation needed

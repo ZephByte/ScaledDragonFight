@@ -5,11 +5,8 @@ import com.electronwill.nightconfig.core.io.WritingMode
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.ChatFormatting
-import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.Style
-import net.minecraft.server.permissions.Permissions
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
@@ -49,7 +46,7 @@ object LegacyConfigMigrator {
 
         // Register an event to notify the first OP that joins
         ServerPlayConnectionEvents.JOIN.register { handler, _, _ ->
-            if (!updateNotificationSent && handler.player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
+            if (!updateNotificationSent && handler.player.isGamemaster()) {
                 handler.player.sendSystemMessage(buildNotification(imported))
                 updateNotificationSent = true // Ensure we only send this once per server start
             }
@@ -121,8 +118,8 @@ object LegacyConfigMigrator {
         val changelogText = Component.literal("[Changelog for v2.0.0]")
             .setStyle(
                 Style.EMPTY
-                    .withClickEvent(ClickEvent.OpenUrl(changelogUrl))
-                    .withHoverEvent(HoverEvent.ShowText(Component.literal("Click to open changelog")))
+                    .withClickEvent(openUrl(changelogUrl))
+                    .withHoverEvent(showText(Component.literal("Click to open changelog")))
                     .withColor(ChatFormatting.BLUE)
                     .withUnderlined(true)
                     .withItalic(true)
@@ -132,8 +129,8 @@ object LegacyConfigMigrator {
             .setStyle(
                 Style.EMPTY
                     .withColor(ChatFormatting.AQUA)
-                    .withClickEvent(ClickEvent.SuggestCommand("/scaleddragonfight reload"))
-                    .withHoverEvent(HoverEvent.ShowText(Component.literal("Click to suggest command")))
+                    .withClickEvent(suggestCommand("/scaleddragonfight reload"))
+                    .withHoverEvent(showText(Component.literal("Click to suggest command")))
             )
 
         val result = if (importedCount > 0) {
