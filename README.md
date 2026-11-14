@@ -89,7 +89,7 @@ Please review the new file, since the single countdown option was split into one
 
 ## 🔌 Compatibility
 
-- Minecraft: `1.21.4 - 1.21.5, 1.21.7 - 1.21.11`
+- Minecraft: `26.1 - 26.3`
 - Fabric Loader: Latest stable version for your Minecraft version
 - Fabric API required
 - **Server-side only** — no client-side installation needed
@@ -102,8 +102,8 @@ Please review the new file, since the single countdown option was split into one
 
 1. Install [Fabric Loader](https://fabricmc.net/) on your server.
 2. Install [Fabric API](https://modrinth.com/mod/fabric-api) on the server.
-3. Place the `scaleddragonfight-vX.X.X_X.X.X.jar` into your server's `mods` folder. 
-   *(Note: The first version number is the mod version, and the second is the Minecraft version, e.g., `v1.1.0_1.21.1`)*
+3. Place the `ScaledDragonFight-vX.X.X+X.X.jar` into your server's `mods` folder. 
+   *(Note: The first version number is the mod version, and the second is the Minecraft version, e.g., `v2.0.0+26.3`)*
 4. Start the server once to generate the config file.
 5. Modify the config if desired and reload with `/scaleddragonfight reload`.
 
