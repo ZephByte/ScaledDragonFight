@@ -1,120 +1,132 @@
-# Scaled Dragon Fight 🌠
+# Scaled Dragon Fight
 
-A lightweight **server-side Fabric mod** that dynamically scales the **Ender Dragon's** health based on the number of players in The End — now with support for **delayed initial spawns** and XP bar countdowns.
+[![GitHub release](https://img.shields.io/github/v/release/ZephByte/ScaledDragonFight?include_prereleases&label=release&color=blue)](https://github.com/ZephByte/ScaledDragonFight/releases/latest)
+[![Fabric](https://img.shields.io/badge/mod%20loader-fabric-blue)](https://fabricmc.net/)
+[![Modrinth](https://img.shields.io/modrinth/v/scaled-dragon-fight?label=modrinth&logo=modrinth&color=00AF5C)](https://modrinth.com/mod/scaled-dragon-fight)
+[![License: MIT](https://img.shields.io/github/license/ZephByte/ScaledDragonFight)](LICENSE.txt)
 
-No installation is needed on the client — just drop it into your server's `mods` folder and configure it to your liking.
-
----
-
-## 🔧 Features
-
-- 📈 **Dynamic Health Scaling:** The Ender Dragon's max health increases with each eligible player in The End.
-- ⏱️ **Initial Spawn Delay:** Optionally delay the very first dragon spawn and show a countdown on players’ XP bars.
-- ⚙️ **Server-Side Only:** No client installation required — perfect for modded or vanilla-compatible SMPs.
-- 🔧 **Configurable:** Customize how scaling and spawn delays work via a structured `.toml` config file.
-- 📢 **Broadcast Messages:** Optional announcements when a scaled dragon appears.
-- 🛠️ **In-Game Reload:** `/scaleddragonfight reload` command to reload configuration without restarting the server.
+A server-side Fabric mod that scales the Ender Dragon's health with the number of players in The End, and can hold back the first dragon spawn behind a countdown.
 
 ---
 
-## 🗂️ Configuration
+## Features
 
-After first launch, a config file will be generated at:
-
-```
-/config/scaleddragonfight.toml
-```
-
-You can configure:
-
-```
-# ─────────────────────────────
-# General Settings
-# ─────────────────────────────
-[general]
-enableMod = true                    # Master enable/disable switch for the mod
-scaleWithOnePlayer = false          # Whether scaling should start with the first player
-countCreativeModePlayers = false    # Include players in Creative mode when scaling
-
-# ─────────────────────────────
-# Dragon Health Scaling
-# ─────────────────────────────
-[healthScaling]
-baseDragonHealth = 200.0            # Base health of the Ender Dragon (vanilla default = 200)
-additionalHealthPerPlayer = 100.0   # Extra health added per eligible player
-
-# ─────────────────────────────
-# Broadcast Messages
-# ─────────────────────────────
-[broadcastMessages]
-enableBroadcast = true              # Enable or disable broadcast messages
-
-# ─────────────────────────────
-# Initial Spawn Delay
-# ─────────────────────────────
-[spawnDelay]
-enableInitialSpawnDelay = true      # Delay the very first dragon spawn in The End
-initialSpawnDelaySeconds = 60       # Time (in seconds) before first dragon spawns
-
-# ─────────────────────────────
-# XP Bar Countdown
-# ─────────────────────────────
-[countdown]
-enableCountdownOverworld = true     # Show the countdown to players in the Overworld
-enableCountdownTheEnd = true        # Show the countdown to players in The End
-enableCountdownNether = false       # Show the countdown to players in the Nether
-```
+- **Health scaling:** the dragon's max health grows with every eligible player in The End when it spawns.
+- **Spawn delay:** delay the very first dragon spawn in a world, so everyone has time to get to The End.
+- **Countdown:** show the time left before the dragon spawns in the action bar, separately for the Overworld, the Nether, and The End.
+- **Broadcasts:** announce the dragon to the whole server when it appears, including how many players it scaled with.
+- **Creative players:** choose whether players in Creative mode count toward scaling.
+- **Reload in game:** apply config changes with `/scaleddragonfight reload`, no restart needed.
+- **Server-side only:** players don't need to install anything.
 
 ---
 
-## 💻 Commands
+## Download
 
-| Command                       | Description                         |
-|------------------------------|-------------------------------------|
-| `/scaleddragonfight reload`  | Reloads the mod’s configuration     |
+- **[Modrinth](https://modrinth.com/mod/scaled-dragon-fight)** (recommended)
+- **[GitHub Releases](https://github.com/ZephByte/ScaledDragonFight/releases)**
+
+---
+
+## Installation
+
+1. Install [Fabric Loader](https://fabricmc.net/) on your server.
+2. Install [Fabric API](https://modrinth.com/mod/fabric-api).
+3. Install [Fabric Language Kotlin](https://modrinth.com/mod/fabric-language-kotlin).
+4. Drop the mod `.jar` for your Minecraft version into the server's `mods` folder. Jars are named `ScaledDragonFight-<mod version>+<Minecraft version>.jar`, e.g. `ScaledDragonFight-v2.0.0+26.3.jar`.
+5. Start the server once to generate `config/scaleddragonfight.toml`.
+
+Server-side only. No client installation is needed.
+
+---
+
+## Compatibility
+
+| Minecraft | Fabric Loader | Fabric API | Fabric Language Kotlin |
+|---|---|---|---|
+| `26.3` | `0.20.1+` | `0.166.2+26.3` | `1.13.9+kotlin.2.3.10` |
+| `26.2` | `0.20.1+` | `0.161.0+26.2` | `1.13.9+kotlin.2.3.10` |
+| `26.1` to `26.1.2` | `0.18.4+` | `0.144.0+26.1` | `1.13.9+kotlin.2.3.10` |
+| `1.21.11` | `0.18.4+` | `0.140.2+1.21.11` | `1.13.9+kotlin.2.3.10` |
+| `1.21.10` | `0.17.3+` | `0.136.0+1.21.10` | `1.13.9+kotlin.2.3.10` |
+| `1.21.9` | `0.17.2+` | `0.133.14+1.21.9` | `1.13.9+kotlin.2.3.10` |
+| `1.21.8` | `0.17.2+` | `0.131.0+1.21.8` | `1.13.9+kotlin.2.3.10` |
+| `1.21.7` | `0.16.14+` | `0.128.2+1.21.7` | `1.13.9+kotlin.2.3.10` |
+| `1.21.5` | `0.16.13+` | `0.120.0+1.21.5` | `1.13.9+kotlin.2.3.10` |
+| `1.21.4` | `0.18.4+` | `0.119.4+1.21.4` | `1.13.9+kotlin.2.3.10` |
+
+Minecraft 1.21.x servers need Java 21 or newer, and 26.x servers need Java 25 or newer.
+
+This mod changes how the vanilla dragon spawns, so it may not work well with mods or datapacks that add their own dragon spawning, such as True Ending.
+
+---
+
+## Usage
+
+| Command | Description |
+|---|---|
+| `/scaleddragonfight reload` | Reloads `config/scaleddragonfight.toml` |
 
 Requires permission level 3 or higher (server ops have level 4 by default).
 
----
+### How health scales
 
-## ❓ FAQ
+The dragon's max health is `baseDragonHealth + additionalHealthPerPlayer × players`, counting the eligible players in The End when it spawns. By default the first player doesn't add health, so scaling starts with the second player. Turn on `scaleWithOnePlayer` to count the first player too.
 
-**1. What happened to my configuration after updating to v2.0.0?**
+With the defaults (200 base, 100 per player):
 
-Version 2.0.0 switched the config file from `.properties` to the new `.toml` format. Your old settings are automatically imported into `config/scaleddragonfight.toml`, and the original file is backed up to `config/scaleddragonfight.properties.bak`.
+| Players in The End | Max health | With `scaleWithOnePlayer` |
+|---|---|---|
+| 1 | 200 | 300 |
+| 2 | 300 | 400 |
+| 3 | 400 | 500 |
 
-Please review the new file, since the single countdown option was split into one toggle per dimension. You can then run `/scaleddragonfight reload` to apply changes without a server restart. For more details, see the v2.0.0 Changelog.
+### Config
 
----
+All settings live in `config/scaleddragonfight.toml`. Each one is written to the file with its default and a description.
 
-## 🔌 Compatibility
-
-- Minecraft: `1.21.4 - 1.21.5, 1.21.7 - 1.21.11, 26.1 - 26.3`
-- Fabric Loader: Latest stable version for your Minecraft version
-- Fabric API required
-- **Server-side only** — no client-side installation needed
-
-
-> **⚠️ Mod/Datapack Interactions:** This mod modifies vanilla Ender Dragon spawning logic. It may exhibit unintended behavior or conflicts with other mods/datapacks that introduce custom dragon spawning mechanics (e.g., True Ending). While I aim to improve compatibility in the future, full support for third-party dragon overhauls is not guaranteed.
----
-
-## 📦 Installation
-
-1. Install [Fabric Loader](https://fabricmc.net/) on your server.
-2. Install [Fabric API](https://modrinth.com/mod/fabric-api) on the server.
-3. Place the `ScaledDragonFight-vX.X.X+X.X.jar` into your server's `mods` folder. 
-   *(Note: The first version number is the mod version, and the second is the Minecraft version, e.g., `v2.0.0+26.3`)*
-4. Start the server once to generate the config file.
-5. Modify the config if desired and reload with `/scaleddragonfight reload`.
+| Setting | Default | Description |
+|---|---|---|
+| `general.enableMod` | `true` | Turn the whole mod on or off |
+| `general.scaleWithOnePlayer` | `false` | Count the first player toward scaling |
+| `general.countCreativeModePlayers` | `false` | Count players in Creative mode toward scaling |
+| `healthScaling.baseDragonHealth` | `200.0` | The dragon's base health (vanilla is 200) |
+| `healthScaling.additionalHealthPerPlayer` | `100.0` | Health added for each counted player |
+| `broadcastMessages.enableBroadcast` | `true` | Announce the dragon to the server when it appears |
+| `spawnDelay.enableInitialSpawnDelay` | `true` | Delay the first dragon spawn in a world |
+| `spawnDelay.initialSpawnDelaySeconds` | `60` | How long to delay it, in seconds |
+| `countdown.enableCountdownOverworld` | `true` | Show the countdown to players in the Overworld |
+| `countdown.enableCountdownNether` | `false` | Show the countdown to players in the Nether |
+| `countdown.enableCountdownTheEnd` | `true` | Show the countdown to players in The End |
 
 ---
 
-## 📜 License
+## Updating from 1.x
 
-MIT License — free to use, modify, and distribute.
+Version 2.0.0 replaced `scaleddragonfight.properties` with `scaleddragonfight.toml`. On the first start after updating, your old settings are imported into the new file and the old one is kept as `scaleddragonfight.properties.bak`. The first operator to join gets a message about it.
+
+The old single countdown toggle is now one toggle per dimension. If you had the countdown turned off, it stays off everywhere. Review the new file, then run `/scaleddragonfight reload` to apply any changes.
 
 ---
 
-## 👤 Author
+## Building from Source
 
-Developed by [ZephByte](https://github.com/zephbyte)
+```bash
+git clone https://github.com/ZephByte/ScaledDragonFight.git
+cd ScaledDragonFight
+./gradlew build
+```
+
+One jar per Minecraft version is written to `versions/<Minecraft version>/build/libs/`.
+
+---
+
+## License
+
+MIT - free to use, modify, and redistribute. See [LICENSE](LICENSE.txt).
+
+---
+
+## Author
+
+Made by [ZephByte](https://github.com/ZephByte).
